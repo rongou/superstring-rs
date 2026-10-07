@@ -2,18 +2,19 @@
 
 `superstring` is a Rust library for shortest common superstrings over arbitrary
 byte strings. It currently provides deterministic preprocessing, an exact
-solver for small instances, and a maximum-overlap greedy baseline, as a foundation
-for implementing the polynomial-time
+solver for small instances, a maximum-overlap greedy baseline, and the paper's
+occurrence-count lower bound, as a foundation for implementing the polynomial-time
 2-approximation in [OpenAI math family 128](https://github.com/openai/math/blob/main/lean/docs/128.md).
 The approximation algorithm is not implemented yet.
 
 ```rust
-use superstring::{exact, greedy, preprocess};
+use superstring::{exact, greedy, occurrence_counts, preprocess};
 
 let inputs = [b"abc".as_slice(), b"bcd".as_slice(), b"bc".as_slice()];
 assert_eq!(preprocess(&inputs), vec![b"abc".as_slice(), b"bcd"]);
 assert_eq!(exact(&inputs).unwrap(), b"abcd");
 assert_eq!(greedy(&inputs).unwrap(), b"abcd");
+assert_eq!(occurrence_counts(&inputs).unwrap().lower_bound(), 4);
 ```
 
 `preprocess` returns borrowed slices in bytewise lexicographic order, removing
@@ -39,7 +40,19 @@ It is a comparison baseline; the paper's factor-two guarantee applies to its
 separate algorithm. For example, on `ab`, `ba`, `bb`, greedy produces `ababb`
 (5 bytes), while an optimal answer is `abba` (4 bytes).
 
-Run a small comparison of solution lengths with:
+`occurrence_counts` implements Section 2's descending recursion over distinct
+nonempty substrings, including its periodic blocking rules. It returns borrowed
+substrings and forced counts `m(s)`, each bounded by the number of overlapping
+occurrences in any common superstring. `lower_bound()` returns `W`, the sum of
+the one-byte counts, which is at most the optimal superstring length. The bound
+can be strict: on `ab`, `ba`, `bb`, it is 3 while the optimum is 4. `count(s)`
+looks up an individual count; `entries()` iterates in bytewise lexicographic order.
+Empty input gives an empty table and a zero bound. This initial implementation
+enumerates substrings, periods, and possible blockers directly. Its runtime is
+polynomial but can be expensive on long strings; it is intended for small inputs
+while the remaining algorithm is developed.
+
+Run a small comparison of lower bounds and solution lengths with:
 
 ```sh
 cargo run --example compare
@@ -64,8 +77,15 @@ periodic strings, and the exact solver's input limit. Greedy tests check coverag
 determinism, and lengths against the exact solver, including a suboptimal case;
 they do not assert a factor-two bound.
 
-Next steps are the paper's occurrence-count lower bound and its layer and
-connection algorithms. See [AGENTS.md](AGENTS.md) for reference
+Count tests check the defining recurrence, `W <= optimum`, and counts against
+actual overlapping occurrences in exact, greedy, and concatenated superstrings.
+They also enumerate all short binary superstrings of tiny instances and cover
+blocking multiplicities, periodic phases, and blockers shorter than the word
+that triggers a rule. These tests provide evidence about the Rust implementation;
+they do not formally verify it.
+
+Next steps are the balanced base graph and the paper's layer and connection
+algorithms. See [AGENTS.md](AGENTS.md) for reference
 locations and implementation conventions.
 
 ## License

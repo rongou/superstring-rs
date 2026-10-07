@@ -10,8 +10,8 @@
 - Start with a library over arbitrary byte strings. Measure length in bytes;
   do not assume UTF-8, normalize text, or use character indexing.
 - The current foundation is preprocessing, an exact solver for small instances,
-  and a deterministic greedy baseline. Next is the paper's occurrence-count
-  lower bound.
+  a deterministic greedy baseline, and the paper's occurrence-count lower bound.
+  Next is the balanced base graph, followed by the layer and connection algorithms.
 
 ## Mathematical reference
 

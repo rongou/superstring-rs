@@ -1,4 +1,4 @@
-use superstring::{exact, greedy};
+use superstring::{exact, greedy, occurrence_counts};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cases: &[(&str, &[&[u8]])] = &[
@@ -6,16 +6,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ("overlap chain", &[b"abc", b"bcd", b"cde"]),
         ("greedy tie", &[b"ab", b"ba", b"bb"]),
         ("periodic", &[b"abababa", b"bababab"]),
+        ("blocked repeats", &[b"aaaaaaaa", b"baaaab"]),
         (
             "five strings",
             &[b"catg", b"ctaagt", b"gcta", b"ttca", b"atgcatc"],
         ),
     ];
     println!(
-        "{:<16} {:>7} {:>7} {:>14}",
-        "Case", "Exact", "Greedy", "Greedy / exact"
+        "{:<16} {:>7} {:>7} {:>7} {:>14}",
+        "Case", "Bound W", "Exact", "Greedy", "Greedy / exact"
     );
     for (name, inputs) in cases {
+        let bound = occurrence_counts(inputs)?.lower_bound();
         let optimum = exact(inputs)?.len();
         let heuristic = greedy(inputs)?.len();
         let ratio = if optimum == 0 {
@@ -23,7 +25,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         } else {
             format!("{:.3}", heuristic as f64 / optimum as f64)
         };
-        println!("{name:<16} {optimum:>7} {heuristic:>7} {ratio:>14}");
+        println!("{name:<16} {bound:>7} {optimum:>7} {heuristic:>7} {ratio:>14}");
     }
     Ok(())
 }
