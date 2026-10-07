@@ -2,17 +2,22 @@
 
 ## Scope
 
-- Repository: `superstring-rs`. Intended Cargo package and library name: `superstring`.
+- Repository: `superstring-rs`. Cargo package and library name: `superstring`.
+- License: `MIT OR Apache-2.0`, at the recipient's option. Keep Cargo metadata,
+  README wording, and the two license files consistent.
 - Build shortest common superstring algorithms in Rust, working toward a faithful
   implementation of OpenAI math family 128's polynomial-time 2-approximation.
 - Start with a library over arbitrary byte strings. Measure length in bytes;
   do not assume UTF-8, normalize text, or use character indexing.
-- The first milestone is preprocessing and an exact solver for small instances,
-  followed by a greedy baseline and the paper's occurrence-count lower bound.
+- The current foundation is preprocessing and an exact solver for small instances.
+  Next are a greedy baseline and the paper's occurrence-count lower bound.
 
 ## Mathematical reference
 
 - Upstream: https://github.com/openai/math
+- Upstream sources are Apache-2.0. Preserve their required license and attribution
+  notices when importing material; the crate's dual license does not replace
+  third-party license obligations.
 - Use upstream `main` as the working reference. Record the revision used when
   reporting proof verification or publishing benchmark results.
 - Paper: `preprints/A-Polynomial-Time-2-Approximation-for-Shortest-Common-Superstring-September-24-2026/`.
@@ -61,7 +66,7 @@
 - Check intermediate invariants where applicable: nonnegative edge counts,
   balanced degrees, preserved edge multisets, connected final support, and
   connection cost within the assigned budgets. Keep counterexamples as regressions.
-- Once the crate exists, run these checks for Rust changes:
+- Run these checks for Rust changes:
 
   ```sh
   cargo fmt --check

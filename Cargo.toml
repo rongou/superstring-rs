@@ -1,0 +1,10 @@
+[package]
+name = "superstring"
+version = "0.1.0"
+edition = "2024"
+description = "Shortest common superstring algorithms over byte strings"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/rongou/superstring-rs"
+readme = "README.md"
+keywords = ["superstring", "strings", "algorithms"]
+categories = ["algorithms"]
