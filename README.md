@@ -1,24 +1,26 @@
 # superstring-rs
 
 `superstring` is a Rust library for shortest common superstrings over arbitrary
-byte strings. It currently provides deterministic preprocessing and an exact
-solver for small instances, as a foundation for implementing the polynomial-time
+byte strings. It currently provides deterministic preprocessing, an exact
+solver for small instances, and a maximum-overlap greedy baseline, as a foundation
+for implementing the polynomial-time
 2-approximation in [OpenAI math family 128](https://github.com/openai/math/blob/main/lean/docs/128.md).
 The approximation algorithm is not implemented yet.
 
 ```rust
-use superstring::{exact, preprocess};
+use superstring::{exact, greedy, preprocess};
 
 let inputs = [b"abc".as_slice(), b"bcd".as_slice(), b"bc".as_slice()];
 assert_eq!(preprocess(&inputs), vec![b"abc".as_slice(), b"bcd"]);
 assert_eq!(exact(&inputs).unwrap(), b"abcd");
+assert_eq!(greedy(&inputs).unwrap(), b"abcd");
 ```
 
 `preprocess` returns borrowed slices in bytewise lexicographic order, removing
-empty strings, duplicates, and strings contained in another input. `exact`
-performs preprocessing automatically and returns an owned `Vec<u8>` containing
+empty strings, duplicates, and strings contained in another input. Both solvers
+perform preprocessing automatically and return an owned `Vec<u8>` containing
 every original input as a contiguous substring. Empty input produces an empty
-output. Neither function requires valid UTF-8.
+output. None of the functions require valid UTF-8.
 
 The exact solver uses subset dynamic programming over suffix-prefix overlaps.
 With `n` strings remaining after preprocessing, the DP takes `O(n^2 * 2^n)` time
@@ -28,6 +30,20 @@ occupies 36 MiB on a 64-bit machine. Larger reduced instances return
 `ExactError::TooManyStrings` before allocating that table. Equal-length solutions
 are chosen deterministically, independent of input order, without promising the
 lexicographically smallest answer.
+
+The greedy solver repeatedly merges the ordered pair with the largest
+suffix-prefix overlap. Ties choose the lexicographically smallest left string,
+then right string. It has no fixed input-count limit, but this straightforward
+implementation recomputes all overlaps each round (`O(n^3)` overlap computations).
+It is a comparison baseline; the paper's factor-two guarantee applies to its
+separate algorithm. For example, on `ab`, `ba`, `bb`, greedy produces `ababb`
+(5 bytes), while an optimal answer is `abba` (4 bytes).
+
+Run a small comparison of solution lengths with:
+
+```sh
+cargo run --example compare
+```
 
 ## Development
 
@@ -44,10 +60,12 @@ cargo test --doc
 Tests check coverage against the original inputs and optimal lengths against
 independent literal-string enumeration on tiny cases and permutation search on
 larger cases. They include arbitrary bytes, redundant inputs, overlap ties,
-periodic strings, and the exact solver's input limit.
+periodic strings, and the exact solver's input limit. Greedy tests check coverage,
+determinism, and lengths against the exact solver, including a suboptimal case;
+they do not assert a factor-two bound.
 
-Next steps are a greedy baseline, the paper's occurrence-count lower bound, and
-its layer and connection algorithms. See [AGENTS.md](AGENTS.md) for reference
+Next steps are the paper's occurrence-count lower bound and its layer and
+connection algorithms. See [AGENTS.md](AGENTS.md) for reference
 locations and implementation conventions.
 
 ## License

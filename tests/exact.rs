@@ -1,12 +1,7 @@
 use superstring::{ExactError, MAX_EXACT_STRINGS, exact, preprocess};
 
-fn contains(text: &[u8], word: &[u8]) -> bool {
-    word.is_empty() || text.windows(word.len()).any(|window| window == word)
-}
-
-fn covers(text: &[u8], inputs: &[&[u8]]) -> bool {
-    inputs.iter().all(|word| contains(text, word))
-}
+mod common;
+use common::{binary_words, contains, covers, next_random};
 
 fn assert_exact(inputs: &[&[u8]], optimum: usize) {
     let output = exact(inputs).unwrap();
@@ -87,18 +82,6 @@ fn resource_limit_is_checked_after_preprocessing() {
     assert_eq!(exact(&redundant).unwrap(), b"abc");
 }
 
-fn binary_words(max_len: usize) -> Vec<Vec<u8>> {
-    (0..=max_len)
-        .flat_map(|len| {
-            (0..1usize << len).map(move |bits| {
-                (0..len)
-                    .map(|offset| b'a' + ((bits >> (len - 1 - offset)) & 1) as u8)
-                    .collect()
-            })
-        })
-        .collect()
-}
-
 #[test]
 fn exhaustive_tiny_instances_match_literal_superstring_search() {
     // All 576 sets of up to three binary words of length at most three.
@@ -170,20 +153,13 @@ fn permutation_optimum(inputs: &[&[u8]]) -> usize {
 
 #[test]
 fn seeded_instances_match_permutation_search() {
-    fn next(seed: &mut u64) -> usize {
-        *seed = seed
-            .wrapping_mul(6_364_136_223_846_793_005)
-            .wrapping_add(1_442_695_040_888_963_407);
-        (*seed >> 32) as usize
-    }
-
     let mut seed = 0x5c5_128_u64;
     let alphabet = [0, 1, 0x80, 0xff];
     for _ in 0..128 {
-        let inputs: Vec<Vec<u8>> = (0..next(&mut seed) % 8)
+        let inputs: Vec<Vec<u8>> = (0..next_random(&mut seed) % 8)
             .map(|_| {
-                (0..next(&mut seed) % 7)
-                    .map(|_| alphabet[next(&mut seed) % alphabet.len()])
+                (0..next_random(&mut seed) % 7)
+                    .map(|_| alphabet[next_random(&mut seed) % alphabet.len()])
                     .collect()
             })
             .collect();

@@ -2,6 +2,7 @@ use std::collections::TryReserveError;
 use std::error::Error;
 use std::fmt;
 
+use crate::overlap::overlap;
 use crate::preprocess;
 
 /// Maximum number of strings supported by [`exact`] after preprocessing.
@@ -184,11 +185,4 @@ pub fn exact<S: AsRef<[u8]>>(strings: &[S]) -> Result<Vec<u8>, ExactError> {
     }
     debug_assert_eq!(output.len(), output_len);
     Ok(output)
-}
-
-fn overlap(left: &[u8], right: &[u8]) -> usize {
-    (1..=left.len().min(right.len()))
-        .rev()
-        .find(|&len| left[left.len() - len..] == right[..len])
-        .unwrap_or(0)
 }

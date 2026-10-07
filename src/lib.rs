@@ -2,8 +2,9 @@
 //!
 //! [`preprocess`] removes redundant inputs. [`exact`] finds a shortest common
 //! superstring for small instances using exponential-time subset dynamic
-//! programming. Both functions make deterministic choices independent of input
-//! order. Lengths count bytes, and inputs need not be valid UTF-8.
+//! programming. [`greedy`] is a maximum-overlap heuristic for comparison. All
+//! functions make deterministic choices independent of input order. Lengths
+//! count bytes, and inputs need not be valid UTF-8.
 //!
 //! The polynomial-time 2-approximation from OpenAI math family 128 is a planned
 //! addition; it is not implemented by this crate yet.
@@ -21,7 +22,10 @@
 #![warn(missing_docs)]
 
 mod exact;
+mod greedy;
+mod overlap;
 mod preprocess;
 
 pub use exact::{ExactError, MAX_EXACT_STRINGS, exact};
+pub use greedy::greedy;
 pub use preprocess::preprocess;

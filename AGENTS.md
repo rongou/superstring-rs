@@ -9,8 +9,9 @@
   implementation of OpenAI math family 128's polynomial-time 2-approximation.
 - Start with a library over arbitrary byte strings. Measure length in bytes;
   do not assume UTF-8, normalize text, or use character indexing.
-- The current foundation is preprocessing and an exact solver for small instances.
-  Next are a greedy baseline and the paper's occurrence-count lower bound.
+- The current foundation is preprocessing, an exact solver for small instances,
+  and a deterministic greedy baseline. Next is the paper's occurrence-count
+  lower bound.
 
 ## Mathematical reference
 
